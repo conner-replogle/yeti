@@ -1,0 +1,17 @@
+[workspace]
+
+members = [
+    "dll_needle",
+    "yeti_lib",
+    "yeti_reborn",
+    "yeti_dll"
+
+]
+exclude = [
+    "yeti_reborn/egui-hittest",
+    "yeti_reborn/glium-hittest",
+    "yeti_reborn/glutin-hittest",
+    "yeti_reborn/winit-hittest",
+    "yeti_dll\\mem-rs"]
+[build]
+target="stable-i686-pc-windows-msvc"

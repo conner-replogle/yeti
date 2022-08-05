@@ -1,0 +1,47 @@
+{
+  "toggle": {
+    "bhop": false,
+    "glow": true
+  },
+  "bhop": {
+    "a": 2
+  },
+  "glow": {
+    "enemy_glow": {
+      "enabled": true,
+      "glow_rgba": [
+        1.0,
+        0.0,
+        0.0,
+        0.4
+      ],
+      "entity_color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "render_when_occluded": true,
+      "render_when_unoccluded": true,
+      "full_bloom": false
+    },
+    "team_glow": {
+      "enabled": false,
+      "glow_rgba": [
+        0.0,
+        0.0,
+        1.0,
+        0.3
+      ],
+      "entity_color": [
+        255,
+        255,
+        255,
+        255
+      ],
+      "render_when_occluded": true,
+      "render_when_unoccluded": true,
+      "full_bloom": false
+    }
+  }
+}

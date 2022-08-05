@@ -1,0 +1,23 @@
+[package]
+name = "yeti_reborn"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dll_needle = {path = "../dll_needle"}
+yeti_lib = {path="../yeti_lib/"}
+ipmpsc = "0.5.1"
+log4rs="1.1.1"
+log = "*"
+thiserror = "1.0.31"
+serde_yaml = "*"
+serde = "*"
+bincode = "*"
+serde_json = "*"
+hazedumper = {git="https://github.com/conner-replogle/hazedumper-rs-lib.git"}
+egui_glium = { git = "https://github.com/conner-replogle/egui-hittest.git" }
+glium = {git = "https://github.com/conner-replogle/glium-hittest.git"}
+ctrlc = "3.2.2"
+windows = {version="0.39.0",features=["Win32_UI_Input_KeyboardAndMouse","Win32_Foundation","Win32_UI_WindowsAndMessaging","Win32_System_Threading"]}

@@ -1,0 +1,7 @@
+{
+  "loaded_config_name": "default",
+  "hack_config_path": "./default.json",
+  "signatures_path": "./signatures.json",
+  "signatures_config_path": "./haze_dumper_config.json",
+  "log_config_path": "./log-config.yaml"
+}
