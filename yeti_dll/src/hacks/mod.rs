@@ -8,6 +8,7 @@ use crate::yeti_hack_manager::{ThreadSafeSignature, ThreadSafeGame, ThreadSafeCo
 
 pub mod bhop;
 pub mod glow;
+pub mod aim;
 pub type ThreadSafeBool = Box<dyn DynAccess<bool>>;
 
 pub trait Hack{
@@ -36,6 +37,7 @@ impl HackRunnable{
 
     pub fn stop(self){
         self.enabled.store(false, Ordering::Relaxed);
+        //TODO handle errror
         self.thread.join();
     }
 

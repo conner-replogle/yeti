@@ -1,11 +1,10 @@
 {
   "toggle": {
     "bhop": false,
-    "glow": true
+    "glow": false,
+    "aim": false
   },
-  "bhop": {
-    "a": 2
-  },
+  "bhop": {},
   "glow": {
     "enemy_glow": {
       "enabled": true,
@@ -23,7 +22,9 @@
       ],
       "render_when_occluded": true,
       "render_when_unoccluded": true,
-      "full_bloom": false
+      "full_bloom": false,
+      "health_affect": false,
+      "bomb_defusal_affect": false
     },
     "team_glow": {
       "enabled": false,
@@ -41,7 +42,13 @@
       ],
       "render_when_occluded": true,
       "render_when_unoccluded": true,
-      "full_bloom": false
+      "full_bloom": false,
+      "health_affect": false,
+      "bomb_defusal_affect": false
     }
+  },
+  "aim": {
+    "mode": "FOV",
+    "targeting_mode": "CLOSEST"
   }
 }

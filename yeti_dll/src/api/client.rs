@@ -1,8 +1,10 @@
+#![allow(non_snake_case)]
 use windows::{Win32::{System::LibraryLoader::GetModuleHandleW, Foundation::HINSTANCE}, core::{HSTRING, PCWSTR}};
-
 use crate::yeti_hack_manager::ThreadSafeSignature;
-
 use super::datatypes::GlowStruct;
+
+
+
 #[derive(Clone,Debug)]
 pub struct Client(pub u32,pub ThreadSafeSignature);
 impl Client{
@@ -13,6 +15,7 @@ impl Client{
         
 
 }
+
 impl Client{
     pub fn dwForceJump(&self) -> &mut u32{
         unsafe{&mut *((self.0 + self.1.load().get_s("dwForceJump") as u32) as *mut u32)}
@@ -26,4 +29,5 @@ impl Client{
     pub fn dwEntityList(&self,i:u32) -> u32{
         unsafe{*((self.0 + self.1.load().get_s("dwEntityList") as u32 + (i * 0x10)) as *mut u32)}
     }
+    
 }

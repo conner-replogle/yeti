@@ -4,6 +4,7 @@ pub mod app_config;
 pub mod sized_string;
 pub mod signatures;
 pub mod error;
+
 use std::{fs::{File, OpenOptions}, io::{Error, Read, Write}, path::PathBuf};
 
 use serde::{Deserialize, Serialize};

@@ -1,13 +1,13 @@
 use std::{sync::{Arc, RwLock}, ops::Deref, path::PathBuf, ptr};
 
 use egui_glium::egui_winit::egui::{Context, Frame, Color32, Ui, RichText, mutex::Mutex, Vec2, menu, Layout};
-use glium::Display;
+use glium::{Display, glutin};
 use egui_glium::egui_winit::egui;
 use log::debug;
 use windows::{Win32::{UI::{Input::KeyboardAndMouse::{SetFocus, SetCapture}, WindowsAndMessaging::{FindWindowA, FindWindowW, GetWindowThreadProcessId}}, System::Threading::{AttachThreadInput, GetCurrentThreadId}, Foundation::GetLastError}, core::{PCSTR, PCWSTR, HSTRING}};
-use yeti_lib::{app_config::AppConfig, hack_config::YetiHackConfig, Saveable};
+use yeti_lib::{app_config::{AppConfig, KeyBindType}, hack_config::YetiHackConfig, Saveable};
 
-use crate::yeti::Yeti;
+use crate::{yeti::Yeti, widgets::KeyBindSelector};
 pub enum GuiMode{
     InGame,
     Settings,
@@ -16,7 +16,7 @@ pub enum GuiMode{
 pub enum SettingsTab{
     Glow,
     Bhops,
-    // Aim,
+    Aim,
     Settings,
 
 }
@@ -82,6 +82,7 @@ pub fn gui_settings(display: &Display,egui_ctx: &Context,app_config:&mut AppConf
         ui.separator();
         match tab{
             SettingsTab::Glow => {
+                ui.add(KeyBindSelector(&mut app_config.key_binds.glow));
 
                 if ui.checkbox(&mut hack_config.toggle.glow, "enabled").changed(){
                     changed = true;
@@ -104,6 +105,12 @@ pub fn gui_settings(display: &Display,egui_ctx: &Context,app_config:&mut AppConf
                     if ui.checkbox(&mut glow_set.full_bloom, "Full Bloom").changed(){
                         changed = true;
                     }
+                    if ui.checkbox(&mut glow_set.bomb_defusal_affect, "Bomb Defusal").changed(){
+                        changed = true;
+                    }
+                    if ui.checkbox(&mut glow_set.health_affect, "Health Affect").changed(){
+                        changed = true;
+                    }
     
                 });
                 ui.collapsing("My Team", |ui|{
@@ -124,6 +131,12 @@ pub fn gui_settings(display: &Display,egui_ctx: &Context,app_config:&mut AppConf
                     if ui.checkbox(&mut glow_set.full_bloom, "Full Bloom").changed(){
                         changed = true;
                     }
+                    if ui.checkbox(&mut glow_set.bomb_defusal_affect, "Bomb Defusal").changed(){
+                        changed = true;
+                    }
+                    if ui.checkbox(&mut glow_set.health_affect, "Health Affect").changed(){
+                        changed = true;
+                    }
 
                 });
             
@@ -140,7 +153,7 @@ pub fn gui_settings(display: &Display,egui_ctx: &Context,app_config:&mut AppConf
                     if ui.button("Rescan Signatures").clicked(){
                         yeti.update_signatures(Yeti::signatures_scan(app_config.signatures_config_path.to_str().unwrap(),app_config.signatures_path.to_str().unwrap()));
                     }
-                    //ui.label(format!("Last scan was {} at {}",yeti.signatures.as_ref().unwrap().timestamp.naive_local().date(),yeti.signatures.as_ref().unwrap().timestamp.naive_local().time().format("%H:%M:%S")));
+                    ui.label(format!("Last scan was {} at {}",yeti.signatures.as_ref().unwrap().timestamp.naive_local().date(),yeti.signatures.as_ref().unwrap().timestamp.naive_local().time().format("%H:%M:%S")));
 
                 });
                 
@@ -160,6 +173,9 @@ pub fn gui_settings(display: &Display,egui_ctx: &Context,app_config:&mut AppConf
 
 
             }
+            SettingsTab::Aim => {
+
+            },
         }
         if changed{
             yeti.update_config(hack_config);
@@ -211,11 +227,10 @@ pub fn gui_in_game(display: &Display,egui_ctx: &Context,config: &mut YetiHackCon
             config.toggle.glow = !config.toggle.glow;
             changed = true;
         }
-        // if ui.button(RichText::new("AIM").color(color_from_bool(con.hacks.aim.enabled))).clicked(){
-        //     let mut con = config.load_full().as_ref().clone();
-        //     con.hacks.aim.enabled = !con.hacks.aim.enabled;
-        //     config.store(Arc::new(con));
-        // }
+        if ui.button(RichText::new("AIM").color(color_from_bool(config.toggle.aim))).clicked(){
+            config.toggle.aim = !config.toggle.aim;
+            changed = true;
+        }
 
         if ui.button(RichText::new("BHOP").color(color_from_bool(config.toggle.bhop))).clicked(){
             config.toggle.bhop = !config.toggle.bhop;

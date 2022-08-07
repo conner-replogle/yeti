@@ -1,6 +1,6 @@
 use std::{mem, fs::File, io::{BufReader, self}, ptr, intrinsics::transmute};
 use log::{error, info, warn,debug, trace};
-use winapi::{um::{winnt::{HANDLE, MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE, IMAGE_NT_HEADERS32, IMAGE_SECTION_HEADER, IMAGE_DOS_HEADER, IMAGE_FILE_HEADER, IMAGE_FILE_MACHINE_I386, PROCESS_ALL_ACCESS, PIMAGE_NT_HEADERS32, PIMAGE_BASE_RELOCATION, PIMAGE_IMPORT_DESCRIPTOR, PCSTR, PVOID, IMAGE_DIRECTORY_ENTRY_BASERELOC, IMAGE_DIRECTORY_ENTRY_IMPORT, PIMAGE_SECTION_HEADER, PIMAGE_DOS_HEADER, MEM_RELEASE, RtlZeroMemory, PAGE_READWRITE}, memoryapi::{VirtualAllocEx, WriteProcessMemory, VirtualFreeEx}, tlhelp32::{CreateToolhelp32Snapshot, PROCESSENTRY32, TH32CS_SNAPPROCESS, Process32First, Process32Next}, handleapi::{INVALID_HANDLE_VALUE, CloseHandle}, processthreadsapi::{OpenProcess, CreateRemoteThread}, synchapi::WaitForSingleObject, errhandlingapi::GetLastError, libloaderapi::{GetProcAddress, LoadLibraryA}, minwinbase::LPTHREAD_START_ROUTINE}, ctypes::c_void, shared::minwindef::{HINSTANCE, FARPROC, LPVOID, LPBYTE}, };
+use winapi::{um::{winnt::{HANDLE, MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE, IMAGE_NT_HEADERS32, IMAGE_SECTION_HEADER, IMAGE_DOS_HEADER, IMAGE_FILE_HEADER, IMAGE_FILE_MACHINE_I386, PROCESS_ALL_ACCESS, PIMAGE_NT_HEADERS32, PIMAGE_BASE_RELOCATION, PIMAGE_IMPORT_DESCRIPTOR, PCSTR, PVOID, IMAGE_DIRECTORY_ENTRY_BASERELOC, IMAGE_DIRECTORY_ENTRY_IMPORT, PIMAGE_SECTION_HEADER, PIMAGE_DOS_HEADER, MEM_RELEASE, RtlZeroMemory, PAGE_READWRITE}, memoryapi::{VirtualAllocEx, WriteProcessMemory, VirtualFreeEx}, tlhelp32::{CreateToolhelp32Snapshot, PROCESSENTRY32, TH32CS_SNAPPROCESS, Process32First, Process32Next}, handleapi::{INVALID_HANDLE_VALUE, CloseHandle}, processthreadsapi::{OpenProcess, CreateRemoteThread, GetExitCodeProcess}, synchapi::WaitForSingleObject, errhandlingapi::GetLastError, libloaderapi::{GetProcAddress, LoadLibraryA}, minwinbase::LPTHREAD_START_ROUTINE}, ctypes::c_void, shared::minwindef::{HINSTANCE, FARPROC, LPVOID, LPBYTE}, };
 
 use crate::mmierror::{ProcessError, InjectionError};
 #[repr(C)]
@@ -211,8 +211,15 @@ impl TargetProcess{
         //let h_thread = call_lib(process, loader_memory);
         debug!("Created h_thread {:?}",h_thread);
         
-        let return_code = WaitForSingleObject(h_thread, 99999999);
-        debug!("Thread ended with code {}",return_code);
+        WaitForSingleObject(h_thread, 99999999);
+        let mut return_code = -1;
+        if GetExitCodeProcess(h_thread,return_code as *mut u32) == 0{
+            GetLastError();
+            debug!("Thread ended but errored on getting return code {}",GetLastError());
+        }else{
+            debug!("Thread ended with code {} ",return_code);
+        }
+       
         VirtualFreeEx(self.process_handle, loader_memory, 0, MEM_RELEASE);
         Ok(())
         }

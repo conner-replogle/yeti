@@ -3,7 +3,7 @@ use std::sync::Arc;
 use arc_swap::access::{DynAccess, DynGuard, Map};
 use log::debug;
 use windows::{Win32::{System::LibraryLoader::{GetModuleHandleA, GetModuleHandleW}, Foundation::HINSTANCE, UI::Input::KeyboardAndMouse::GetAsyncKeyState}, core::{PCSTR, PCWSTR, HSTRING}};
-use yeti_lib::{hack_config::{BhopConfig, YetiHackConfig}, signatures::Signatures};
+use yeti_lib::{hack_config::{ YetiHackConfig, bhop::BhopConfig}, signatures::Signatures};
 use crate::{yeti_hack_manager::{ThreadSafeSignature, ThreadSafeGame, ThreadSafeConfig}, api::{player::Player, client::Client, Game, engine::ClientState}};
 use super::{Hack, ThreadSafeBool};
 

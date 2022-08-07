@@ -1,4 +1,4 @@
-use std::{error::Error, path::PathBuf};
+use std::{error::Error, path::PathBuf, thread};
 
 use dll_needle::target_process::TargetProcess;
 use hazedumper::haze_dumper;
@@ -35,9 +35,15 @@ impl Yeti{
 }
 impl Yeti{
     pub fn signatures_scan(config_file: &str,sig_file:&str) -> Signatures {
-        let mut sig = Signatures::new(haze_dumper(config_file.to_string()));
-        sig.save(sig_file).unwrap();
-        return sig;
+        let config_file: String = config_file.to_owned();
+        let sig_file: String = sig_file.to_owned();
+        let a = thread::spawn(move || {
+            let mut sig = Signatures::new(haze_dumper(config_file));
+            sig.save(&sig_file).unwrap();
+            sig
+        });
+        
+        return a.join().unwrap();
     }
     pub fn start(&mut self,dll_path: &PathBuf,config_file:&PathBuf) -> Result<(),YetiError >{
         if self.injected{
@@ -49,7 +55,6 @@ impl Yeti{
             match process.inject_dll(dll_path.canonicalize().unwrap().to_str().unwrap(),(SizedString::<155>::try_from(name.as_str()).unwrap(),SizedString::<155>::try_from(config_file.canonicalize().unwrap().to_str().unwrap()).unwrap())){
                 Ok(_) => {
                     
-                    info!("Yeti Started and injected");
 
                     if let Some(sender) = &self.sender{
                         sender.send(&Packet{
@@ -57,6 +62,7 @@ impl Yeti{
                         }).unwrap();
                     sender.send(self.signatures.as_ref().unwrap()).unwrap();
                     }
+                    info!("Yeti Started and injected");
                     
                     self.injected = true;
                     return Ok(());
@@ -82,9 +88,10 @@ impl Yeti{
                 message_type: yeti_lib::imc::MessageType::SIGNATURE,
             }).unwrap();
             sender.send(&sig).unwrap();
+            debug!("Signatures sent to be updated");
             
         }
-        debug!("Signatures sent to be updated");
+        debug!("Signatures updated");
         self.signatures = Some(sig);
     }
     pub fn stop(&mut self){

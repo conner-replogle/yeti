@@ -26,30 +26,33 @@ fn main() {
     unsafe{AllocConsole()};
     
     // This is a fully functional DLL ready for injection!
-    let (map_file,logging_path) = unsafe{*(lp_reserved as *const (SizedString::<155>,SizedString::<155>))}.into();
+    let (map_file,logging_path) = unsafe{*(lp_reserved as *mut u32 as *const (SizedString::<155>,SizedString::<155>))}.into();
     let map_file:String = map_file.into();
     let logging_path:String = logging_path.into();
     println!("Loggin config path is {}",logging_path);
-    log4rs::init_file(logging_path,Default::default()).unwrap();
+    log4rs::init_file(&logging_path,Default::default()).unwrap();
     info!("Inside process finish intialization");
-    debug!("Map File is {:?}",map_file); 
+    debug!("Map File is {:?} and log path is {}",map_file,logging_path); 
     let yeti_ok= Yeti::new(&map_file);
     if let Err(err) = yeti_ok{
         error!("Could not initialize Yeti returned with error:{}",err);
-        return;
+        return false;
     }
     let mut yeti = yeti_ok.unwrap();
     info!("Intialization done starting hack loop");
-    loop{
-        let result = yeti.update();
-        if let Err(err) = result{
-            debug!("Yeti exiting with err {}",err);
-            break ;
+    thread::spawn(move || {
+        loop{
+            let result = yeti.update();
+            if let Err(err) = result{
+                debug!("Yeti exiting with err {}",err);
+                break ;
+            }
+    
         }
+        debug!("Good bye world");
+    });
 
-    }
-    debug!("Good bye world");
-
+    true
 
 }
 

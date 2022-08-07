@@ -3,5 +3,10 @@
   "hack_config_path": "./default.json",
   "signatures_path": "./signatures.json",
   "signatures_config_path": "./haze_dumper_config.json",
-  "log_config_path": "./log-config.yaml"
+  "log_config_path": "./log-config.yaml",
+  "key_binds": {
+    "wall_toggle": null,
+    "wall_push": null,
+    "bhop_toggle": null
+  }
 }

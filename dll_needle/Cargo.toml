@@ -17,3 +17,6 @@ features=["winuser","memoryapi","errhandlingapi","tlhelp32","handleapi","process
 
 [build-dependencies]
 cc = "*"
+
+[build]
+target = "stable-i686-pc-windows-msvc"

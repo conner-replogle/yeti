@@ -21,3 +21,4 @@ egui_glium = { git = "https://github.com/conner-replogle/egui-hittest.git" }
 glium = {git = "https://github.com/conner-replogle/glium-hittest.git"}
 ctrlc = "3.2.2"
 windows = {version="0.39.0",features=["Win32_UI_Input_KeyboardAndMouse","Win32_Foundation","Win32_UI_WindowsAndMessaging","Win32_System_Threading"]}
+strum = "0.24.1"

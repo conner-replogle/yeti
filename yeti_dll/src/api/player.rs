@@ -1,6 +1,8 @@
+#![allow(non_snake_case)]
+use cgmath::Vector3;
 use log::debug;
-use mem::windows::wrappers::DWORD;
-use windows::Win32::Foundation::HINSTANCE;
+
+use yeti_lib::hack_config::aim::Bones;
 
 
 use crate::yeti_hack_manager::ThreadSafeSignature;
@@ -33,5 +35,15 @@ impl Player{
     }
     pub fn m_bIsDefusing(&self) -> bool{
         return unsafe{*((self.0 + self.1.load().get_n("m_bIsDefusing") as u32) as *mut u32)} != 0;
+    }
+    pub fn m_vecOrigin(&self) -> Vector3<f32>{
+        return unsafe{*((self.0 + self.1.load().get_n("m_vecOrigin") as u32) as *mut Vector3<f32>)};
+        
+    }
+    pub fn m_dwBoneMatrix(&self,bone_id:Bones) -> Vector3<f32>{
+        return unsafe{*((self.0 + self.1.load().get_n("m_dwBoneMatrix") as u32 + 0x30 * bone_id as u32) as *mut Vector3<f32>)};
+    } 
+    pub fn m_bSpottedByMask(&self) -> u32{
+        unsafe{*((self.0 + self.1.load().get_n("m_bSpottedByMask") as u32) as *mut u32)}
     }
 }

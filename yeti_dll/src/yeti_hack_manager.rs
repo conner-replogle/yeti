@@ -4,11 +4,11 @@ use std::{sync::{Arc, atomic::{AtomicBool, Ordering}, Mutex}, thread::{self, Joi
 
 use arc_swap::{ArcSwap, ArcSwapAny, access::{DynAccess, Map}};
 use ipmpsc::{Receiver, SharedRingBuffer};
-use log::{error, debug};
+use log::{error, debug, info};
 use windows::Win32::Foundation::RPC_NT_DUPLICATE_ENDPOINT;
 use yeti_lib::{hack_config::{YetiHackConfig, HackToggle}, imc::{Packet, MessageType, STATUS_MESSAGE}, signatures::Signatures};
 
-use crate::{error::Error, hacks::{bhop::Bhop, Hack, HackRunnable, glow::Glow}, api::Game};
+use crate::{error::Error, hacks::{bhop::Bhop, Hack, HackRunnable, glow::Glow,aim::Aim}, api::Game};
 
 pub type ThreadSafeSignature = Arc<ArcSwapAny<Arc<Signatures>>>;
 pub type ThreadSafeConfig = Arc<ArcSwapAny<Arc<YetiHackConfig>>>;
@@ -25,6 +25,7 @@ impl Yeti{
     pub fn new(map_file:&str) -> Result<Self,Error>{
         let shared = SharedRingBuffer::open(map_file);
         if let Ok(buffer) = shared{
+            info!("Shared Memory Buffer Connected");
             let rx = Receiver::new(buffer);
             let config = Arc::new(ArcSwap::from_pointee(YetiHackConfig::default()));
             let signature = Arc::new(ArcSwap::from_pointee(Signatures::default()));
@@ -119,6 +120,12 @@ impl Yeti{
             let a = self.threads.remove(std::any::type_name::<Glow>()).unwrap();
             a.stop();
         }
+        if toggle_list.aim && !self.threads.contains_key(std::any::type_name::<Aim>()){
+            self.start_hack::<Aim>();
+        }else if !toggle_list.aim && self.threads.contains_key(std::any::type_name::<Aim>()){
+            let a = self.threads.remove(std::any::type_name::<Aim>()).unwrap();
+            a.stop();
+        }
     }
     pub fn update(&mut self) -> Result<(),Error>{
         let packet = self.rx.try_recv::<Packet>();
@@ -134,10 +141,6 @@ impl Yeti{
         let mut a = a.clone();
         a.update();
         self.game.store(Arc::new(a));
-
-
-
-        //self.game.store(Arc::new(game));
         
         
         self.thread_manager();

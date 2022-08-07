@@ -2,17 +2,18 @@ use std::{fs::{File, OpenOptions}, path::PathBuf, io::{Write, Read}, ptr};
 
 use dll_needle::target_process::TargetProcess;
 use log::{LevelFilter, debug};
-use log4rs::{append::{console::{ConsoleAppender, Target}, file::FileAppender}, encode::pattern::PatternEncoder, config::{Appender, Root}, filter::threshold::ThresholdFilter};
+use log4rs::{append::{console::{ConsoleAppender, Target}, file::FileAppender, rolling_file::{RollingFileAppender, RollingFileAppenderBuilder}}, encode::pattern::PatternEncoder, config::{Appender, Root}, filter::threshold::ThresholdFilter};
 use windows::{Win32::{UI::{Input::KeyboardAndMouse::{SetFocus, SetCapture}, WindowsAndMessaging::{FindWindowA, GetWindowThreadProcessId, FindWindowW}}, Foundation::GetLastError, System::Threading::{AttachThreadInput, GetCurrentThreadId}}, core::{PCSTR, PCWSTR, HSTRING}};
 use yeti::Yeti;
-use yeti_lib::{hack_config::YetiHackConfig, app_config::AppConfig, Saveable, signatures::Signatures};
+use yeti_lib::{hack_config::{YetiHackConfig, self}, app_config::{AppConfig, KeyBindType}, Saveable, signatures::Signatures};
 use std::{sync::{Mutex, Arc, RwLock}, time::Duration, thread};
 use egui_glium::egui_winit::egui::Color32;
-use glium::glutin;
+use glium::glutin::{self, event::{VirtualKeyCode, KeyboardInput}};
 use crate::gui::GuiMode;
 mod gui;
 mod yeti;
 mod error;
+mod widgets;
 
 
 // Begin Logging
@@ -106,21 +107,26 @@ fn main() {
             glutin::event::Event::DeviceEvent {event,..} => {
                 match event{
                     glutin::event::DeviceEvent::Key(key) => {
-                        if !cursor_hittest_toggle &&key.virtual_keycode.unwrap() == glutin::event::VirtualKeyCode::F1 && key.state == glutin::event::ElementState::Released{
-                            cursor_hittest_toggle = !cursor_hittest_toggle;
-                            println!("Into Menu");
-                            display.gl_window().window().set_cursor_hittest(cursor_hittest_toggle).unwrap();
-                            display.gl_window().window().set_always_on_top(!cursor_hittest_toggle);
+                        if let Some(key_code) =key.virtual_keycode{
+                            if !cursor_hittest_toggle &&key_code == glutin::event::VirtualKeyCode::F1 && key.state == glutin::event::ElementState::Released{
+                                cursor_hittest_toggle = !cursor_hittest_toggle;
+                                println!("Into Menu");
+                                display.gl_window().window().set_cursor_hittest(cursor_hittest_toggle).unwrap();
+                                display.gl_window().window().set_always_on_top(!cursor_hittest_toggle);
+                            }
                             
-                            
+                            if HandleKeyBind(&mut hack_config.toggle.glow,&app_config.key_binds.glow,&key_code,&key){
+                                yeti.update_config(&hack_config);
+                            }
+                            if key_code == glutin::event::VirtualKeyCode::F2 && key.state == glutin::event::ElementState::Released{
+                                println!("Settings");
+                                // cursor_hittest_toggle = !cursor_hittest_toggle;
+                                // display.gl_window().window().set_cursor_hittest(cursor_hittest_toggle).unwrap();
+                                mode = if let GuiMode::InGame = mode {GuiMode::Settings}else{GuiMode::InGame};
+                                
+                            }
                         }
-                        if key.virtual_keycode.unwrap() == glutin::event::VirtualKeyCode::F2 && key.state == glutin::event::ElementState::Released{
-                            println!("Settings");
-                            // cursor_hittest_toggle = !cursor_hittest_toggle;
-                            // display.gl_window().window().set_cursor_hittest(cursor_hittest_toggle).unwrap();
-                            mode = if let GuiMode::InGame = mode {GuiMode::Settings}else{GuiMode::InGame};
-                            
-                        }
+                        
 
                     }
                     _ => {}
@@ -159,4 +165,36 @@ fn create_display(event_loop: &glutin::event_loop::EventLoop<()>) -> glium::Disp
         .with_vsync(true);
 
     glium::Display::new(window_builder, context_builder, event_loop).unwrap()
+}
+
+fn HandleKeyBind(value: &mut bool,keybind: &Option<KeyBindType>,key_code: &VirtualKeyCode,key:&KeyboardInput) -> bool{
+    if let Some(key_type) = keybind{
+        match key_type{
+            yeti_lib::app_config::KeyBindType::Toggle(key_code_target) => {
+                if key_code == key_code_target && key.state == glutin::event::ElementState::Released{
+                    *value = !*value;
+                    return true;
+                }
+            },
+            yeti_lib::app_config::KeyBindType::Hold(key_code_target) => {
+                let new_value;
+                if key_code == key_code_target && key.state == glutin::event::ElementState::Pressed{
+                    new_value = true;
+                }else{
+                    new_value = false;
+                }
+                if new_value != *value{
+                    *value = new_value;
+                    return true;
+                }
+                
+
+            },
+            yeti_lib::app_config::KeyBindType::None => {},
+        }
+        
+
+    }
+    return false;
+
 }

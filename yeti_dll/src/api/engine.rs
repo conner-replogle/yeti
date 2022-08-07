@@ -1,6 +1,6 @@
+#![allow(non_snake_case)]
+use cgmath::Vector3;
 use windows::{Win32::{System::LibraryLoader::GetModuleHandleW, Foundation::HINSTANCE}, core::{HSTRING, PCWSTR}};
-
-
 use crate::yeti_hack_manager::ThreadSafeSignature;
 #[derive(Clone,Debug)]
 pub struct Engine(pub u32,pub ThreadSafeSignature);
@@ -20,6 +20,12 @@ impl Engine{
        let a =  unsafe{*((*self.dwClientState()+self.1.load().get_s("dwClientState_State") as u32) as *const u32) };
        num::FromPrimitive::from_u32(a)
 
+    }
+    pub fn dwClientState_ViewAngles(&self) -> &mut Vector3<f32> {
+        unsafe{&mut *((*self.dwClientState() + self.1.load().get_s("dwClientState_ViewAngles") as u32 ) as *mut Vector3<f32>)}
+    }
+    pub fn dwClientState_GetLocalPlayer(&self) -> u32{
+        unsafe{*((*self.dwClientState() + self.1.load().get_s("dwClientState_GetLocalPlayer") as u32 ) as *mut u32)}
     }
 }
 #[derive(Copy, Clone,FromPrimitive,Debug)]
